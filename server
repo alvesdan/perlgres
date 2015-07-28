@@ -1,0 +1,4 @@
+#!/bin/bash
+export DB_HOST=localhost
+export DB_NAME=adcreation_development
+morbo app.pl --listen "http://*:8080"
