@@ -7,9 +7,8 @@ get "/" => sub {
   $self->render(json => Api::Table::list());
 };
 
-get "/:table_name" => sub {
+get "/:table_name/fields" => sub {
   my $self = shift;
-  my $log = Mojo::Log->new;
   my $table_name = $self->stash('table_name');
 
   $self->render(
@@ -17,5 +16,13 @@ get "/:table_name" => sub {
   );
 };
 
-app->start;
+get "/:table_name" => sub {
+  my $self = shift;
+  my $table_name = $self->stash('table_name');
 
+  $self->render(
+    json => Api::Table->records($table_name)
+  );
+};
+
+app->start;
