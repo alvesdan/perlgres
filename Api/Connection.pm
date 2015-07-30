@@ -17,6 +17,5 @@ sub create_connection {
   return $connection;
 };
 
-$connection = create_connection();
-
 1;
+
