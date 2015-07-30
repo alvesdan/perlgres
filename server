@@ -1,4 +1,4 @@
 #!/bin/bash
 export DB_HOST=localhost
-export DB_NAME=portfa_development
+export DB_NAME=dvdrental
 morbo app.pl --listen "http://*:8080"

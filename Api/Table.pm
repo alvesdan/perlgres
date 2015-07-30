@@ -15,7 +15,7 @@ sub list {
   while(my $ref = $list_query->fetchrow_hashref()) {
     push @tables, $ref->{'table_name'}
   };
-  \@tables;
+  @tables;
 };
 
 sub columns {
@@ -105,4 +105,3 @@ sub escape_string {
 }
 
 1;
-

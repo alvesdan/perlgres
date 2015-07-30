@@ -3,7 +3,8 @@ use Api::Table;
 
 get "/" => sub {
   my $self = shift;
-  $self->render(json => Api::Table::list());
+  my @tables = Api::Table::list();
+  $self->render(json => \@tables);
 };
 
 get "/:table_name/columns" => sub {
@@ -38,4 +39,3 @@ post "/:table_name" => sub {
 };
 
 app->start;
-
