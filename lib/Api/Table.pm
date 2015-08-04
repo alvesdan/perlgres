@@ -90,22 +90,33 @@ sub insert {
   );
 
   return { error => $error } if $error;
-  # TODO: Return the record ID
-  { success => 1 };
+
+  my $record_column = identifier($table_name);
+  my $last_record_query = $connection->prepare(
+    "SELECT * FROM $table_name ORDER BY $record_column DESC LIMIT 1"
+  );
+  $last_record_query->execute();
+  $last_record_query->fetchrow_hashref();
 }
 
 sub record {
   my ($self, $table_name, $id) = @_;
-  my %columns = Api::Table->columns($table_name);
-  my $record_column = "id";
-  unless (grep {$_ eq "id"} @columns) {
-    $record_column = $table_name."_id";
-  }
+  my $record_column = identifier($table_name);
   my $record_query = $connection->prepare(
     "SELECT * FROM $table_name WHERE $record_column = $id"
   );
   $record_query->execute();
   $record_query->fetchrow_hashref();
+}
+
+sub identifier {
+  $table_name = shift;
+  my %columns = Api::Table->columns($table_name);
+  my $record_column = "id";
+  unless (grep {$_ eq "id"} @columns) {
+    $record_column = $table_name."_id";
+  }
+  $record_column;
 }
 
 sub current_timestamp {
