@@ -1,4 +1,5 @@
 use Mojolicious::Lite;
+use lib 'lib';
 use Api::Table;
 
 get "/" => sub {
