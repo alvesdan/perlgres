@@ -1,5 +1,6 @@
 package Api::Table;
 use Api::Connection;
+use Api::Query;
 our $connection = Api::Connection->create_connection();
 
 sub list {
@@ -37,7 +38,7 @@ sub records {
   my ($self, $table_name) = @_;
   my @result = ();
   my $records_query = $connection->prepare(
-    "SELECT * FROM $table_name"
+    Api::Query->build($table_name, {})
   );
   $records_query->execute();
   while(my $ref = $records_query->fetchrow_hashref()) {
@@ -103,7 +104,9 @@ sub record {
   my ($self, $table_name, $id) = @_;
   my $record_column = identifier($table_name);
   my $record_query = $connection->prepare(
-    "SELECT * FROM $table_name WHERE $record_column = $id"
+    Api::Query->build($table_name, {
+      where => { "$record_column" => $id }
+    })
   );
   $record_query->execute();
   $record_query->fetchrow_hashref();
