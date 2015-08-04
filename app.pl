@@ -38,4 +38,15 @@ post "/:table_name" => sub {
   );
 };
 
+get "/:table_name/:id" => sub {
+  my $self = shift;
+  my $table_name = $self->stash('table_name');
+  my $id = $self->stash('id');
+  my $record = Api::Table->record($table_name, $id);
+
+  $self->render(
+    json => $record
+  );
+};
+
 app->start;

@@ -94,6 +94,20 @@ sub insert {
   { success => 1 };
 }
 
+sub record {
+  my ($self, $table_name, $id) = @_;
+  my %columns = Api::Table->columns($table_name);
+  my $record_column = "id";
+  unless (grep {$_ eq "id"} @columns) {
+    $record_column = $table_name."_id";
+  }
+  my $record_query = $connection->prepare(
+    "SELECT * FROM $table_name WHERE $record_column = $id"
+  );
+  $record_query->execute();
+  $record_query->fetchrow_hashref();
+}
+
 sub current_timestamp {
   ($sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst) = gmtime(time);
   "$year-$mon-$mday $hour:$min:$sec"
