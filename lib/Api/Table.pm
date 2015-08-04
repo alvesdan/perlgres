@@ -6,10 +6,18 @@ our $connection = Api::Connection->create_connection();
 sub list {
   my @tables = ();
   my $list_query = $connection->prepare(
-    "SELECT table_schema,table_name
-    FROM information_schema.tables
-    WHERE table_type = 'BASE TABLE' AND table_schema = 'public'
-    ORDER BY table_schema, table_name"
+    Api::Query->build("information_schema.tables", {
+      columns => ["table_schema", "table_name"],
+      where => {
+        eq => {
+          table_type => 'BASE TABLE',
+          table_schema => 'public'
+        }
+      },
+      orber_by => {
+        asc => ["table_schema", "table_name"]
+      }
+    })
   );
 
   $list_query->execute();
@@ -23,8 +31,12 @@ sub columns {
   my ($self, $table_name) = @_;
   my %result = ();
   my $columns_query = $connection->prepare(
-    "SELECT column_name, data_type, character_maximum_length
-    from INFORMATION_SCHEMA.COLUMNS where table_name = '$table_name'"
+    Api::Query->build("information_schema.columns", {
+      colums => ["column_name", "data_type", "character_maximum_length"],
+      where => {
+        eq => { table_name => $table_name }
+      }
+    })
   );
   $columns_query->execute();
 
@@ -94,7 +106,11 @@ sub insert {
 
   my $record_column = identifier($table_name);
   my $last_record_query = $connection->prepare(
-    "SELECT * FROM $table_name ORDER BY $record_column DESC LIMIT 1"
+    Api::Query->build($table_name, {
+      order_by => {
+        desc => [$record_column]
+      }
+    })
   );
   $last_record_query->execute();
   $last_record_query->fetchrow_hashref();
