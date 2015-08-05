@@ -8,6 +8,8 @@ sub select {
   my @columns = ();
   my @where = ();
   my $order = "";
+  my $limit;
+  my $offset;
   my $query_string = "SELECT * FROM $table_name";
 
   for my $key (sort keys %options) {
@@ -24,6 +26,9 @@ sub select {
     if ($key eq "order_by") {
       parse_order(\$order, $where);
     }
+
+    $limit = $where if ($key eq "limit");
+    $offset = $where if ($key eq "offset");
   }
 
   if (@columns) {
@@ -38,6 +43,14 @@ sub select {
 
   if (length $order > 0) {
     $query_string = $query_string." $order";
+  }
+
+  if ($limit) {
+    $query_string = $query_string." LIMIT $limit";
+  }
+
+  if ($offset) {
+    $query_string = $query_string." OFFSET $offset";
   }
 
   $query_string;

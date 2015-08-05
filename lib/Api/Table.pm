@@ -86,7 +86,8 @@ sub insert {
     Api::Query->select($table_name, {
       order_by => {
         desc => [$record_column]
-      }
+      },
+      limit => 1
     })
   );
 
@@ -99,7 +100,8 @@ sub record {
   my $record_column = identifier($table_name);
   my $record_query = $connection->prepare(
     Api::Query->select($table_name, {
-      where => { "$record_column" => $id }
+      where => { "$record_column" => $id },
+      limit => 1
     })
   );
   $record_query->execute();

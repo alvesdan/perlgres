@@ -2,7 +2,7 @@ use warnings;
 use strict;
 use lib 'lib';
 use Api::Query;
-use Test::Simple tests => 5;
+use Test::Simple tests => 8;
 
 do {
   my $expected = "SELECT * FROM example WHERE email = 'john\@example.com' AND id > '5' AND name LIKE 'john'";
@@ -16,14 +16,14 @@ do {
       }
     });
 
-  ok($expected eq $returned, 'builds the query');
+  ok($expected eq $returned, 'Builds the query');
 };
 
 do {
   my $expected = "SELECT * FROM example";
   my $returned = Api::Query->select("example", {});
 
-  ok($expected eq $returned, 'generates simple query when no options');
+  ok($expected eq $returned, 'Generates simple query when no options');
 };
 
 do {
@@ -37,7 +37,7 @@ do {
     }
   });
 
-  ok($expected eq $returned, 'generates a query with ORDER');
+  ok($expected eq $returned, 'Generates a query with ORDER');
 };
 
 do {
@@ -46,7 +46,7 @@ do {
     columns => ["id", "name"]
   });
 
-  ok($expected eq $returned, 'generates a query with custom columns');
+  ok($expected eq $returned, 'Generates a query with custom columns');
 };
 
 do {
@@ -56,5 +56,33 @@ do {
     email => "john\@example.com"
   });
 
-  ok($expected eq $returned, 'generates an insert query');
+  ok($expected eq $returned, 'Generates an insert query');
+};
+
+do {
+  my $expected = "SELECT * FROM example LIMIT 10";
+  my $returned = Api::Query->select("example", {
+    limit => 10
+  });
+
+  ok($expected eq $returned, 'Generates an query with LIMIT');
+};
+
+do {
+  my $expected = "SELECT * FROM example OFFSET 5";
+  my $returned = Api::Query->select("example", {
+    offset => 5
+  });
+
+  ok($expected eq $returned, 'Generates an query with OFFSET');
+};
+
+do {
+  my $expected = "SELECT * FROM example LIMIT 10 OFFSET 5";
+  my $returned = Api::Query->select("example", {
+    offset => 5,
+    limit => 10
+  });
+
+  ok($expected eq $returned, 'Generates an query with LIMIT and OFFSET');
 };
