@@ -2,13 +2,13 @@ package Api::Query;
 use strict;
 use warnings;
 
-sub build {
+sub select {
   my ($self, $table_name, $options) = @_;
   my %options = %$options;
-  my @where = ();
-  my $query_string = "SELECT * FROM $table_name";
-  my $order = "";
   my @columns = ();
+  my @where = ();
+  my $order = "";
+  my $query_string = "SELECT * FROM $table_name";
 
   for my $key (sort keys %options) {
     my $where = $options{$key};
@@ -99,6 +99,31 @@ sub build_where_query {
   }
 
   $query_string;
+}
+
+sub insert {
+  my ($self, $table_name, $insert_attributes) = @_;
+  my %insert_attributes = %$insert_attributes;
+  my @columns = ();
+  my @values = ();
+
+  foreach my $key (sort keys %insert_attributes) {
+    my $value = $insert_attributes{"$key"};
+    if ($value) {
+      push @columns, $key;
+      push @values, single_quote_string($value);
+    }
+  };
+
+  my $columns_string = join(", ", @columns);
+  my $values_string = join(", ", @values);
+
+  "INSERT INTO $table_name($columns_string) VALUES($values_string)"
+}
+
+sub single_quote_string {
+  my $string = shift;
+  "'$string'";
 }
 
 1;

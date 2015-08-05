@@ -6,7 +6,7 @@ our $connection = Api::Connection->create_connection();
 sub list {
   my @tables = ();
   my $list_query = $connection->prepare(
-    Api::Query->build("information_schema.tables", {
+    Api::Query->select("information_schema.tables", {
       columns => ["table_schema", "table_name"],
       where => {
         eq => {
@@ -31,7 +31,7 @@ sub columns {
   my ($self, $table_name) = @_;
   my %result = ();
   my $columns_query = $connection->prepare(
-    Api::Query->build("information_schema.columns", {
+    Api::Query->select("information_schema.columns", {
       colums => ["column_name", "data_type", "character_maximum_length"],
       where => {
         eq => { table_name => $table_name }
@@ -50,7 +50,7 @@ sub records {
   my ($self, $table_name) = @_;
   my @result = ();
   my $records_query = $connection->prepare(
-    Api::Query->build($table_name, {})
+    Api::Query->select($table_name, {})
   );
   $records_query->execute();
   while(my $ref = $records_query->fetchrow_hashref()) {
@@ -63,55 +63,33 @@ sub insert {
   my ($self, $table_name, $params) = @_;
   my %columns = Api::Table->columns($table_name);
   my %insert_attributes = ();
-  my @columns = ();
-  my @values = ();
   my $error;
 
   foreach $key (keys %columns) {
-    $insert_attributes{"$key"} = $params->param("$key");
-  };
-
-  delete @insert_attributes{qw(id)};
-
-  foreach $key (sort keys %insert_attributes) {
-    my $value = $insert_attributes{"$key"};
-    if ($value) {
-      push @columns, $key;
-      push @values, "'$value'";
+    if ($key ne "id" ) {
+      $insert_attributes{$key} = $params->param($key);
     }
   };
-
-  if ($columns{"created_at"}) {
-    unless (grep {$_ eq "created_at"} @columns) {
-      push @columns, "created_at";
-      push @values, escape_string(current_timestamp());
-      push @columns, "updated_at";
-      push @values, escape_string(current_timestamp());
-    }
-  }
-
-  my $columns_string = join(", ", @columns);
-  my $values_string = join(", ", @values);
 
   $connection->{HandleError} = sub {
     $error = $DBI::errstr
   };
 
   my $record = $connection->do(
-    "INSERT INTO $table_name($columns_string)
-    VALUES($values_string)"
+    Api::Query->insert($table_name, \%insert_attributes)
   );
 
   return { error => $error } if $error;
 
   my $record_column = identifier($table_name);
   my $last_record_query = $connection->prepare(
-    Api::Query->build($table_name, {
+    Api::Query->select($table_name, {
       order_by => {
         desc => [$record_column]
       }
     })
   );
+
   $last_record_query->execute();
   $last_record_query->fetchrow_hashref();
 }
@@ -120,7 +98,7 @@ sub record {
   my ($self, $table_name, $id) = @_;
   my $record_column = identifier($table_name);
   my $record_query = $connection->prepare(
-    Api::Query->build($table_name, {
+    Api::Query->select($table_name, {
       where => { "$record_column" => $id }
     })
   );
@@ -138,14 +116,5 @@ sub identifier {
   $record_column;
 }
 
-sub current_timestamp {
-  ($sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst) = gmtime(time);
-  "$year-$mon-$mday $hour:$min:$sec"
-}
-
-sub escape_string {
-  my $string = shift;
-  "'$string'";
-}
-
 1;
+

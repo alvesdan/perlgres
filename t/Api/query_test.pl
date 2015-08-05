@@ -1,10 +1,12 @@
+use warnings;
+use strict;
 use lib 'lib';
 use Api::Query;
-use Test::Simple tests => 4;
+use Test::Simple tests => 5;
 
 do {
-  $expected = "SELECT * FROM example WHERE email = 'john\@example.com' AND id > '5' AND name LIKE 'john'";
-  $returned = Api::Query->build("example", {
+  my $expected = "SELECT * FROM example WHERE email = 'john\@example.com' AND id > '5' AND name LIKE 'john'";
+  my $returned = Api::Query->select("example", {
       where => {
         email => 'john@example.com',
         like => {
@@ -18,15 +20,15 @@ do {
 };
 
 do {
-  $expected = "SELECT * FROM example";
-  $returned = Api::Query->build("example", {});
+  my $expected = "SELECT * FROM example";
+  my $returned = Api::Query->select("example", {});
 
   ok($expected eq $returned, 'generates simple query when no options');
 };
 
 do {
-  $expected = "SELECT * FROM example WHERE name LIKE '\%john\%' ORDER BY id DESC";
-  $returned = Api::Query->build("example", {
+  my $expected = "SELECT * FROM example WHERE name LIKE '\%john\%' ORDER BY id DESC";
+  my $returned = Api::Query->select("example", {
     order_by => {
       desc => ["id"]
     },
@@ -39,10 +41,20 @@ do {
 };
 
 do {
-  $expected = "SELECT id, name FROM example";
-  $returned = Api::Query->build("example", {
+  my $expected = "SELECT id, name FROM example";
+  my $returned = Api::Query->select("example", {
     columns => ["id", "name"]
   });
 
   ok($expected eq $returned, 'generates a query with custom columns');
+};
+
+do {
+  my $expected = "INSERT INTO example(email, name) VALUES('john\@example.com', 'John')";
+  my $returned = Api::Query->insert("example", {
+    name => "John",
+    email => "john\@example.com"
+  });
+
+  ok($expected eq $returned, 'generates an insert query');
 };
