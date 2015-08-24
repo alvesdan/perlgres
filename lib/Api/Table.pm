@@ -95,6 +95,22 @@ sub insert {
   $last_record_query->fetchrow_hashref();
 }
 
+sub delete {
+  my ($self, $table_name, $id) = @_;
+  my $column = identifier($table_name);
+  my $query = Api::Query->delete($table_name, {
+    "$column" => $id
+  });
+
+  $connection->do($query);
+  $connection->{HandleError} = sub {
+    $error = $DBI::errstr
+  };
+  return { error => $error } if $error;
+
+  { success => 1 };
+}
+
 sub record {
   my ($self, $table_name, $id) = @_;
   my $record_column = identifier($table_name);
@@ -119,4 +135,3 @@ sub identifier {
 }
 
 1;
-

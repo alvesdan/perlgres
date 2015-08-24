@@ -2,7 +2,7 @@ use warnings;
 use strict;
 use lib 'lib';
 use Api::Query;
-use Test::Simple tests => 8;
+use Test::Simple tests => 9;
 
 do {
   my $expected = "SELECT * FROM example WHERE email = 'john\@example.com' AND id > '5' AND name LIKE 'john'";
@@ -85,4 +85,13 @@ do {
   });
 
   ok($expected eq $returned, 'Generates an query with LIMIT and OFFSET');
+};
+
+do {
+  my $expected = "DELETE FROM example WHERE id = 1";
+  my $returned = Api::Query->delete("example", {
+    id => 1
+  });
+
+  ok($expected eq $returned, 'Generates a deletion query');
 };

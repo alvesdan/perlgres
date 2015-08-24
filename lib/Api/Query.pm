@@ -134,6 +134,16 @@ sub insert {
   "INSERT INTO $table_name($columns_string) VALUES($values_string)"
 }
 
+sub delete {
+  my ($self, $table_name, $delete_attributes) = @_;
+  my %delete_attributes = %$delete_attributes;
+
+  my ($column) = keys %delete_attributes;
+  my $value = $delete_attributes{"$column"};
+
+  "DELETE FROM $table_name WHERE $column = $value";
+}
+
 sub single_quote_string {
   my $string = shift;
   "'$string'";

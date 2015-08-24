@@ -50,4 +50,16 @@ get "/:table_name/:id" => sub {
   );
 };
 
+del ":table_name/:id" => sub {
+  my $self = shift;
+  my $table_name = $self->stash('table_name');
+  my $id = $self->stash('id');
+
+  my $deletion = Api::Table->delete($table_name, $id);
+
+  $self->render(
+    json => $deletion
+  );
+};
+
 app->start;
